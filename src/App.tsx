@@ -6,6 +6,24 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 
+// Auth Pages
+import Login from "./pages/auth/Login";
+import Register from "./pages/auth/Register";
+import ForgotPassword from "./pages/auth/ForgotPassword";
+import ResetPassword from "./pages/auth/ResetPassword";
+
+// Dashboard & User Pages
+import Dashboard from "./pages/Dashboard";
+import Profile from "./pages/Profile";
+import KYC from "./pages/KYC";
+
+// Marketplace & Trading Pages
+import Marketplace from "./pages/Marketplace";
+import Inventory from "./pages/Inventory";
+import AddInventory from "./pages/AddInventory";
+import MyListings from "./pages/MyListings";
+import CreateListing from "./pages/CreateListing";
+
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -15,8 +33,28 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
+          {/* Public Pages */}
           <Route path="/" element={<Index />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+          
+          {/* Auth Pages */}
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
+          
+          {/* Dashboard & User */}
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/kyc" element={<KYC />} />
+          
+          {/* Marketplace & Trading */}
+          <Route path="/marketplace" element={<Marketplace />} />
+          <Route path="/inventory" element={<Inventory />} />
+          <Route path="/inventory/add" element={<AddInventory />} />
+          <Route path="/listings" element={<MyListings />} />
+          <Route path="/listings/create" element={<CreateListing />} />
+          
+          {/* Catch-all */}
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
