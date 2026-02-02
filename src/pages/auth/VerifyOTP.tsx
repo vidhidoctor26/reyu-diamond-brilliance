@@ -180,11 +180,11 @@ const VerifyOTP = () => {
 
               {/* Back Link */}
               <Link
-                to="/forgot-password"
+                to="/resend-otp"
                 className="flex items-center justify-center gap-2 text-muted-foreground hover:text-primary transition-colors"
               >
                 <ArrowLeft className="h-4 w-4" />
-                Try different email
+                Resend using another email
               </Link>
             </>
           ) : (
