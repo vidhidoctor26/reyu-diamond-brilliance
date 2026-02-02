@@ -19,6 +19,8 @@ import ResendOTP from "./pages/auth/ResendOTP";
 import Dashboard from "./pages/Dashboard";
 import Profile from "./pages/Profile";
 import KYC from "./pages/KYC";
+import AdminDashboard from "./pages/admin/AdminDashboard";
+import UserDashboard from "./pages/user/UserDashboard";
 
 // Marketplace & Trading Pages
 import Marketplace from "./pages/Marketplace";
@@ -50,6 +52,8 @@ const App = () => (
           
           {/* Dashboard & User */}
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/admin/dashboard" element={<AdminDashboard />} />
+          <Route path="/user/dashboard" element={<UserDashboard />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/kyc" element={<KYC />} />
           
