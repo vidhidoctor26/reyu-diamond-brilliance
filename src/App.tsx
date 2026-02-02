@@ -13,6 +13,7 @@ import ForgotPassword from "./pages/auth/ForgotPassword";
 import OTPSent from "./pages/auth/OTPSent";
 import VerifyOTP from "./pages/auth/VerifyOTP";
 import ResetPassword from "./pages/auth/ResetPassword";
+import ResendOTP from "./pages/auth/ResendOTP";
 
 // Dashboard & User Pages
 import Dashboard from "./pages/Dashboard";
@@ -44,6 +45,7 @@ const App = () => (
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/otp-sent" element={<OTPSent />} />
           <Route path="/verify-otp" element={<VerifyOTP />} />
+          <Route path="/resend-otp" element={<ResendOTP />} />
           <Route path="/reset-password" element={<ResetPassword />} />
           
           {/* Dashboard & User */}
