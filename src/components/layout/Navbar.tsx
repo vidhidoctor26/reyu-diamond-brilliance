@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "react-router-dom";
-import { Diamond, Bell, Menu, X, Search, User, Settings, LogOut, Shield } from "lucide-react";
+import { Diamond, Bell, Menu, X, Search, User, Settings, LogOut, Shield, PanelLeft, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -32,7 +32,7 @@ const Navbar = ({ sidebarOpen, onToggleSidebar }: NavbarProps) => {
           <div className="flex items-center gap-2">
             <Button variant="ghost" size="icon" className="relative">
               <Bell className="h-5 w-5" />
-              <span className="absolute top-1 right-1 w-2 h-2 bg-champagne rounded-full" />
+              <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-destructive rounded-full text-[10px] text-destructive-foreground flex items-center justify-center font-medium">3</span>
             </Button>
             <button
               onClick={onToggleSidebar}
@@ -45,44 +45,31 @@ const Navbar = ({ sidebarOpen, onToggleSidebar }: NavbarProps) => {
       </header>
 
       {/* Desktop Header */}
-      <header className="hidden lg:flex fixed top-0 left-64 right-0 z-30 h-16 items-center justify-between px-6 glass border-b border-border">
-        {/* Left: Logo placeholder for alignment + Search */}
-        <div className="flex items-center gap-4 flex-1 max-w-md">
+      <header className="hidden lg:flex fixed top-0 left-64 right-0 z-30 h-16 items-center justify-between px-6 bg-card border-b border-border">
+        {/* Left: Sidebar Toggle + Search */}
+        <div className="flex items-center gap-4 flex-1 max-w-xl">
+          <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-primary">
+            <PanelLeft className="h-5 w-5" />
+          </Button>
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input 
-              placeholder="Search diamonds, users, transactions..." 
+              placeholder="Search diamonds, listings, deals..." 
               className="pl-10 bg-muted/50 border-border focus:bg-background transition-colors"
             />
           </div>
         </div>
 
-        {/* Right: Status + Notifications + User */}
-        <div className="flex items-center gap-4">
-          {/* User Status Badge */}
-          <Badge variant="outline" className="px-3 py-1 border-champagne/30 bg-champagne/10 text-champagne">
-            <span className="w-2 h-2 bg-accent rounded-full mr-2 animate-pulse" />
-            Online
-          </Badge>
-
-          {/* Notifications */}
-          <Button variant="ghost" size="icon" className="relative">
-            <Bell className="h-5 w-5" />
-            <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-champagne rounded-full" />
-          </Button>
-
-          {/* User Menu */}
+        {/* Right: User Dropdown + Verified Badge + Notifications */}
+        <div className="flex items-center gap-3">
+          {/* Mock User Dropdown */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button className="flex items-center gap-3 p-2 rounded-xl hover:bg-muted transition-colors">
-                <Avatar className="h-8 w-8">
-                  <AvatarImage src="" />
-                  <AvatarFallback className="bg-champagne/20 text-champagne font-semibold text-sm">JD</AvatarFallback>
-                </Avatar>
-                <div className="text-left hidden xl:block">
-                  <div className="font-medium text-primary text-sm">John Doe</div>
-                  <div className="text-xs text-muted-foreground">Verified Trader</div>
-                </div>
+              <button className="flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-muted transition-colors border border-border">
+                <Diamond className="h-4 w-4 text-champagne" />
+                <span className="text-sm text-muted-foreground">Mock:</span>
+                <span className="text-sm font-medium text-primary">Verified User</span>
+                <ChevronDown className="h-4 w-4 text-muted-foreground" />
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56">
@@ -105,6 +92,17 @@ const Navbar = ({ sidebarOpen, onToggleSidebar }: NavbarProps) => {
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
+
+          {/* Verified Badge */}
+          <Badge className="bg-accent text-accent-foreground px-3 py-1 font-medium">
+            Verified
+          </Badge>
+
+          {/* Notifications */}
+          <Button variant="ghost" size="icon" className="relative">
+            <Bell className="h-5 w-5" />
+            <span className="absolute -top-0.5 -right-0.5 w-5 h-5 bg-destructive rounded-full text-[11px] text-destructive-foreground flex items-center justify-center font-semibold">3</span>
+          </Button>
         </div>
       </header>
     </>
