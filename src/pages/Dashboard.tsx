@@ -14,7 +14,7 @@ import {
   Diamond
 } from "lucide-react";
 import { Link } from "react-router-dom";
-import DashboardLayout from "@/components/layout/DashboardLayout";
+import DashboardShell from "@/components/layout/DashboardShell";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -87,7 +87,7 @@ const itemVariants = {
 
 const Dashboard = () => {
   return (
-    <DashboardLayout>
+    <DashboardShell>
       <div className="p-6 lg:p-8">
         {/* Header */}
         <motion.div
@@ -323,7 +323,7 @@ const Dashboard = () => {
           </motion.div>
         </div>
       </div>
-    </DashboardLayout>
+    </DashboardShell>
   );
 };
 
