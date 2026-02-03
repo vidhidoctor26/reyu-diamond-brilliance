@@ -28,7 +28,7 @@ const DashboardShell = ({ children }: DashboardShellProps) => {
       />
 
       {/* Main Content */}
-      <main className="lg:ml-64 pt-16 lg:pt-0 min-h-screen">
+      <main className="lg:ml-64 pt-16 min-h-screen">
         {children}
       </main>
     </div>
