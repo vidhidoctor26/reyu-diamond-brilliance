@@ -28,6 +28,7 @@ import Inventory from "./pages/Inventory";
 import AddInventory from "./pages/AddInventory";
 import MyListings from "./pages/MyListings";
 import CreateListing from "./pages/CreateListing";
+import Preferences from "./pages/Preferences";
 
 const queryClient = new QueryClient();
 
@@ -63,6 +64,7 @@ const App = () => (
           <Route path="/inventory/add" element={<AddInventory />} />
           <Route path="/listings" element={<MyListings />} />
           <Route path="/listings/create" element={<CreateListing />} />
+          <Route path="/preferences" element={<Preferences />} />
           
           {/* Catch-all */}
           <Route path="*" element={<NotFound />} />
