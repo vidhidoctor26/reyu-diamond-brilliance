@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
+import { Link } from "react-router-dom";
 import { 
   Search, 
   Filter, 
@@ -294,72 +295,74 @@ const Marketplace = () => {
               transition={{ delay: index * 0.05 }}
             >
               {viewMode === "grid" ? (
-                <Card className="card-premium overflow-hidden group cursor-pointer">
-                  {/* Image */}
-                  <div className="aspect-square bg-gradient-to-br from-diamond-shimmer to-pearl relative overflow-hidden">
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <Diamond className="h-20 w-20 text-champagne/30" />
-                    </div>
-                    {/* Overlay Actions */}
-                    <div className="absolute inset-0 bg-primary/80 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
-                      <Button size="icon" variant="secondary" className="rounded-full">
-                        <Eye className="h-5 w-5" />
-                      </Button>
-                      <Button size="icon" variant="secondary" className="rounded-full">
-                        <Heart className="h-5 w-5" />
-                      </Button>
-                    </div>
-                    {/* Badge */}
-                    <div className="absolute top-3 left-3">
-                      <Badge className={listing.trending 
-                        ? "bg-emerald-500/90 text-white" 
-                        : "bg-muted/90"
-                      }>
-                        {listing.trending ? (
-                          <><TrendingUp className="h-3 w-3 mr-1" /> Hot</>
-                        ) : "New"}
-                      </Badge>
-                    </div>
-                  </div>
-                  
-                  <CardContent className="p-5">
-                    <div className="flex items-start justify-between mb-2">
-                      <h3 className="font-display text-lg font-semibold text-primary">
-                        {listing.name}
-                      </h3>
-                      <div className={`flex items-center gap-1 text-sm ${
-                        listing.trending ? "text-emerald-600" : "text-rose-500"
-                      }`}>
-                        {listing.trending ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
-                        {listing.change}
+                <Link to={`/marketplace/${listing.id}`}>
+                  <Card className="card-premium overflow-hidden group cursor-pointer">
+                    {/* Image */}
+                    <div className="aspect-square bg-gradient-to-br from-diamond-shimmer to-pearl relative overflow-hidden">
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <Diamond className="h-20 w-20 text-champagne/30" />
+                      </div>
+                      {/* Overlay Actions */}
+                      <div className="absolute inset-0 bg-primary/80 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
+                        <Button size="icon" variant="secondary" className="rounded-full">
+                          <Eye className="h-5 w-5" />
+                        </Button>
+                        <Button size="icon" variant="secondary" className="rounded-full" onClick={(e) => e.preventDefault()}>
+                          <Heart className="h-5 w-5" />
+                        </Button>
+                      </div>
+                      {/* Badge */}
+                      <div className="absolute top-3 left-3">
+                        <Badge className={listing.trending 
+                          ? "bg-emerald-500/90 text-white" 
+                          : "bg-muted/90"
+                        }>
+                          {listing.trending ? (
+                            <><TrendingUp className="h-3 w-3 mr-1" /> Hot</>
+                          ) : "New"}
+                        </Badge>
                       </div>
                     </div>
                     
-                    <div className="flex gap-2 mb-3">
-                      <Badge variant="secondary">{listing.carat}ct</Badge>
-                      <Badge variant="secondary">{listing.color}</Badge>
-                      <Badge variant="secondary">{listing.clarity}</Badge>
-                    </div>
-                    
-                    <p className="text-sm text-muted-foreground mb-3">{listing.seller}</p>
-                    
-                    <div className="flex items-center justify-between pt-3 border-t border-border">
-                      <span className="font-display text-xl font-semibold text-primary">
-                        ${listing.price.toLocaleString()}
-                      </span>
-                      <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                        <span className="flex items-center gap-1">
-                          <Eye className="h-3 w-3" />
-                          {listing.views}
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <Filter className="h-3 w-3" />
-                          {listing.bids}
-                        </span>
+                    <CardContent className="p-5">
+                      <div className="flex items-start justify-between mb-2">
+                        <h3 className="font-display text-lg font-semibold text-primary">
+                          {listing.name}
+                        </h3>
+                        <div className={`flex items-center gap-1 text-sm ${
+                          listing.trending ? "text-emerald-600" : "text-rose-500"
+                        }`}>
+                          {listing.trending ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
+                          {listing.change}
+                        </div>
                       </div>
-                    </div>
-                  </CardContent>
-                </Card>
+                      
+                      <div className="flex gap-2 mb-3">
+                        <Badge variant="secondary">{listing.carat}ct</Badge>
+                        <Badge variant="secondary">{listing.color}</Badge>
+                        <Badge variant="secondary">{listing.clarity}</Badge>
+                      </div>
+                      
+                      <p className="text-sm text-muted-foreground mb-3">{listing.seller}</p>
+                      
+                      <div className="flex items-center justify-between pt-3 border-t border-border">
+                        <span className="font-display text-xl font-semibold text-primary">
+                          ${listing.price.toLocaleString()}
+                        </span>
+                        <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                          <span className="flex items-center gap-1">
+                            <Eye className="h-3 w-3" />
+                            {listing.views}
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <Filter className="h-3 w-3" />
+                            {listing.bids}
+                          </span>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </Link>
               ) : (
                 <Card className="card-premium p-4">
                   <div className="flex items-center gap-6">

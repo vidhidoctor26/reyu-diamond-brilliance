@@ -24,10 +24,15 @@ import UserDashboard from "./pages/user/UserDashboard";
 
 // Marketplace & Trading Pages
 import Marketplace from "./pages/Marketplace";
+import ListingDetail from "./pages/ListingDetail";
 import Inventory from "./pages/Inventory";
 import AddInventory from "./pages/AddInventory";
 import MyListings from "./pages/MyListings";
 import CreateListing from "./pages/CreateListing";
+
+// Bidding Pages
+import MyBids from "./pages/MyBids";
+import BidsOnMyListings from "./pages/BidsOnMyListings";
 import Preferences from "./pages/Preferences";
 
 const queryClient = new QueryClient();
@@ -60,11 +65,16 @@ const App = () => (
           
           {/* Marketplace & Trading */}
           <Route path="/marketplace" element={<Marketplace />} />
+          <Route path="/marketplace/:id" element={<ListingDetail />} />
           <Route path="/inventory" element={<Inventory />} />
           <Route path="/inventory/add" element={<AddInventory />} />
           <Route path="/listings" element={<MyListings />} />
           <Route path="/listings/create" element={<CreateListing />} />
           <Route path="/preferences" element={<Preferences />} />
+          
+          {/* Bidding */}
+          <Route path="/bids" element={<MyBids />} />
+          <Route path="/bids/received" element={<BidsOnMyListings />} />
           
           {/* Catch-all */}
           <Route path="*" element={<NotFound />} />
