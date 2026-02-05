@@ -17,7 +17,9 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import DashboardLayout from "@/components/layout/DashboardLayout";
-import { Button } from "@/components/ui/button";
+ import DashboardShell from "@/components/layout/DashboardShell";
+ import { Button } from "@/components/ui/button";
+ import { useNavigate } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -53,6 +55,7 @@ const stats = [
 ];
 
 const MyListings = () => {
+   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState("all");
 
@@ -76,7 +79,7 @@ const MyListings = () => {
   );
 
   return (
-    <DashboardLayout>
+     <DashboardShell>
       <div className="p-6 lg:p-8">
         {/* Header */}
         <motion.div
@@ -92,12 +95,13 @@ const MyListings = () => {
               Manage and track your diamond listings
             </p>
           </div>
-          <Link to="/listings/create">
-            <Button className="btn-premium text-primary-foreground rounded-xl">
+           <Button 
+             onClick={() => navigate("/listings/create")}
+             className="btn-premium text-primary-foreground rounded-xl"
+           >
               <Plus className="h-5 w-5 mr-2" />
               Create Listing
             </Button>
-          </Link>
         </motion.div>
 
         {/* Stats */}
@@ -261,7 +265,7 @@ const MyListings = () => {
           </Tabs>
         </motion.div>
       </div>
-    </DashboardLayout>
+     </DashboardShell>
   );
 };
 

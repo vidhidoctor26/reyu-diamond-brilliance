@@ -15,7 +15,8 @@ import {
   ArrowUpDown
 } from "lucide-react";
 import { Link } from "react-router-dom";
-import DashboardLayout from "@/components/layout/DashboardLayout";
+ import { useNavigate } from "react-router-dom";
+ import DashboardShell from "@/components/layout/DashboardShell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -59,6 +60,7 @@ const stats = [
 ];
 
 const Inventory = () => {
+   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
   const [sortBy, setSortBy] = useState("newest");
@@ -76,8 +78,12 @@ const Inventory = () => {
     }
   };
 
+   const handleCreateListing = (inventoryId: string) => {
+     navigate("/listings/create", { state: { inventoryId } });
+   };
+ 
   return (
-    <DashboardLayout>
+     <DashboardShell>
       <div className="p-6 lg:p-8">
         {/* Header */}
         <motion.div
@@ -234,7 +240,7 @@ const Inventory = () => {
                             Edit
                           </DropdownMenuItem>
                           {item.status === "available" && (
-                            <DropdownMenuItem>
+                             <DropdownMenuItem onClick={() => handleCreateListing(item.id)}>
                               <Upload className="h-4 w-4 mr-2" />
                               Create Listing
                             </DropdownMenuItem>
@@ -254,7 +260,7 @@ const Inventory = () => {
           </Card>
         </motion.div>
       </div>
-    </DashboardLayout>
+     </DashboardShell>
   );
 };
 
