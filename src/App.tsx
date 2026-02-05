@@ -33,6 +33,7 @@ import CreateListing from "./pages/CreateListing";
 // Bidding Pages
 import MyBids from "./pages/MyBids";
 import BidsOnMyListings from "./pages/BidsOnMyListings";
+ import ListingBids from "./pages/ListingBids";
 import Preferences from "./pages/Preferences";
 
 const queryClient = new QueryClient();
@@ -75,6 +76,7 @@ const App = () => (
           {/* Bidding */}
           <Route path="/bids" element={<MyBids />} />
           <Route path="/bids/received" element={<BidsOnMyListings />} />
+           <Route path="/bids/received/:listingId" element={<ListingBids />} />
           
           {/* Catch-all */}
           <Route path="*" element={<NotFound />} />
