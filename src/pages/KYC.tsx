@@ -1,394 +1,217 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { 
-  Shield, 
-  Upload, 
-  CheckCircle, 
-  Clock, 
-  AlertCircle, 
+  UploadCloud, 
   FileText, 
-  User, 
-  Building,
-  CreditCard,
+  CheckCircle2, 
+  ShieldCheck, 
+  Info,
   Camera,
-  ArrowRight,
-  X
+  ArrowLeft,
+  ArrowRight
 } from "lucide-react";
-import DashboardLayout from "@/components/layout/DashboardLayout";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
-
-type KYCStatus = "pending" | "approved" | "rejected" | "not_started";
+import { Card } from "@/components/ui/card";
+import { useNavigate } from "react-router-dom";
+import { cn } from "@/lib/utils";
+import DashboardLayout from "@/components/layout/DashboardLayout";
 
 const KYC = () => {
-  const [status] = useState<KYCStatus>("pending");
-  const [step, setStep] = useState(1);
-  const [documents, setDocuments] = useState({
-    aadhaar: null as File | null,
-    pan: null as File | null,
-    selfie: null as File | null,
+  const navigate = useNavigate();
+
+  const [uploads, setUploads] = useState({
+    aadhaar: false,
+    pan: false,
+    selfie: false,
   });
 
-  const steps = [
-    { number: 1, title: "Documents", icon: FileText },
-    { number: 2, title: "Verification", icon: Camera },
-  ];
-
-  const progress = status === "approved" ? 100 : status === "pending" ? 75 : status === "rejected" ? 0 : 25;
-
-  const handleFileChange = (key: keyof typeof documents, file: File | null) => {
-    setDocuments({ ...documents, [key]: file });
+  const toggleUpload = (key: "aadhaar" | "pan" | "selfie") => {
+    setUploads((prev) => ({ ...prev, [key]: !prev[key] }));
   };
 
-  const renderStatusBanner = () => {
-    switch (status) {
-      case "approved":
-        return (
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mb-8 p-6 rounded-2xl bg-emerald-500/10 border border-emerald-500/20"
-          >
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-full bg-emerald-500/20 flex items-center justify-center">
-                <CheckCircle className="h-6 w-6 text-emerald-500" />
-              </div>
-              <div>
-                <h3 className="font-display text-lg font-semibold text-emerald-600">Verification Approved</h3>
-                <p className="text-emerald-600/70">Your identity has been verified. You have full access to all trading features.</p>
-              </div>
-            </div>
-          </motion.div>
-        );
-      case "pending":
-        return (
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mb-8 p-6 rounded-2xl bg-champagne/10 border border-champagne/20"
-          >
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-full bg-champagne/20 flex items-center justify-center">
-                <Clock className="h-6 w-6 text-champagne" />
-              </div>
-              <div>
-                <h3 className="font-display text-lg font-semibold text-primary">Verification In Progress</h3>
-                <p className="text-muted-foreground">Your documents are being reviewed. This usually takes 24-48 hours.</p>
-              </div>
-            </div>
-          </motion.div>
-        );
-      case "rejected":
-        return (
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mb-8 p-6 rounded-2xl bg-destructive/10 border border-destructive/20"
-          >
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-full bg-destructive/20 flex items-center justify-center">
-                <AlertCircle className="h-6 w-6 text-destructive" />
-              </div>
-              <div className="flex-1">
-                <h3 className="font-display text-lg font-semibold text-destructive">Verification Rejected</h3>
-                <p className="text-destructive/70">Your documents could not be verified. Please review the reason below and resubmit.</p>
-                <p className="text-sm mt-2 p-3 rounded-lg bg-destructive/5 text-destructive">
-                  <strong>Reason:</strong> The uploaded ID document is blurry. Please upload a clear, high-resolution image.
-                </p>
-              </div>
-            </div>
-          </motion.div>
-        );
-      default:
-        return null;
-    }
-  };
-
-  const FileUploadCard = ({ 
-    title, 
-    description, 
-    fileKey, 
-    icon: Icon 
-  }: { 
-    title: string; 
-    description: string; 
-    fileKey: keyof typeof documents;
-    icon: React.ElementType;
-  }) => {
-    const file = documents[fileKey];
-    
-    return (
-      <div className={`p-6 rounded-2xl border-2 border-dashed transition-colors ${
-        file ? "border-emerald-500 bg-emerald-500/5" : "border-border hover:border-champagne"
-      }`}>
-        <div className="flex items-start gap-4">
-          <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
-            file ? "bg-emerald-500/10 text-emerald-500" : "bg-muted text-muted-foreground"
-          }`}>
-            {file ? <CheckCircle className="h-6 w-6" /> : <Icon className="h-6 w-6" />}
-          </div>
-          <div className="flex-1">
-            <h4 className="font-medium text-primary mb-1">{title}</h4>
-            <p className="text-sm text-muted-foreground mb-4">{description}</p>
-            
-            {file ? (
-              <div className="flex items-center justify-between p-3 rounded-xl bg-muted/50">
-                <span className="text-sm text-primary truncate">{file.name}</span>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => handleFileChange(fileKey, null)}
-                  className="text-destructive hover:text-destructive/80"
-                >
-                  <X className="h-4 w-4" />
-                </Button>
-              </div>
-            ) : (
-              <Label htmlFor={fileKey} className="cursor-pointer">
-                <div className="flex items-center gap-2 px-4 py-2 rounded-xl border border-border hover:border-champagne transition-colors w-fit">
-                  <Upload className="h-4 w-4" />
-                  <span className="text-sm font-medium">Choose File</span>
-                </div>
-                <Input
-                  id={fileKey}
-                  type="file"
-                  accept="image/*,.pdf"
-                  className="hidden"
-                  onChange={(e) => handleFileChange(fileKey, e.target.files?.[0] || null)}
-                />
-              </Label>
-            )}
-          </div>
-        </div>
-      </div>
-    );
-  };
+  const canContinue = uploads.aadhaar && uploads.pan;
 
   return (
     <DashboardLayout>
-      <div className="p-6 lg:p-8 max-w-4xl mx-auto">
-        {/* Header */}
+      <div className="min-h-screen flex items-center justify-center p-4 md:p-6 lg:p-8">
+        {/* SINGLE FADE-IN */}
         <motion.div
-          initial={{ opacity: 0, y: -20 }}
+          initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-8"
+          transition={{ duration: 0.5 }}
+          className="w-full max-w-2xl"
         >
-          <div className="flex items-center gap-3 mb-2">
-            <Shield className="h-8 w-8 text-champagne" />
-            <h1 className="font-display text-3xl md:text-4xl font-semibold text-primary">
-              KYC Verification
-            </h1>
-          </div>
-          <p className="text-muted-foreground">
-            Complete your identity verification to unlock all trading features
-          </p>
+          <Card className="relative overflow-hidden rounded-3xl border border-border/40 bg-card/80 backdrop-blur-md shadow-xl">
+            {/* Header */}
+            <div className="px-6 pt-8 pb-6 md:px-10">
+              <span className="inline-block rounded-full bg-champagne/10 px-3 py-1 text-xs font-medium text-champagne mb-4">
+                Step 2 of 3 · Identity
+              </span>
+
+              <div className="flex items-center gap-3 mb-2">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-champagne/10">
+                  <ShieldCheck className="h-5 w-5 text-champagne" />
+                </div>
+                <h1 className="font-display text-2xl font-semibold text-primary">
+                  Verification Documents
+                </h1>
+              </div>
+
+              <p className="text-muted-foreground text-sm">
+                Please upload clear, readable copies of the required documents.
+              </p>
+            </div>
+
+            {/* Upload Grid – Required Documents */}
+            <div className="px-6 md:px-10 grid gap-4 sm:grid-cols-2">
+              <UploadBox
+                title="Aadhaar Card"
+                desc="Front side of your Aadhaar"
+                icon={<FileText className="h-6 w-6" />}
+                isActive={uploads.aadhaar}
+                onClick={() => toggleUpload("aadhaar")}
+                required
+              />
+
+              <UploadBox
+                title="PAN Card"
+                desc="Clear copy of your PAN"
+                icon={<FileText className="h-6 w-6" />}
+                isActive={uploads.pan}
+                onClick={() => toggleUpload("pan")}
+                required
+              />
+            </div>
+
+            {/* Optional Selfie Upload - Full Width */}
+            <div className="px-6 md:px-10 mt-4">
+              <UploadBox
+                title="Selfie Verification"
+                desc="Take a selfie using your device's camera"
+                icon={<Camera className="h-6 w-6" />}
+                isActive={uploads.selfie}
+                onClick={() => toggleUpload("selfie")}
+                optional
+              />
+              <p className="text-xs text-muted-foreground mt-2 ml-1">
+                Optional: Used for faster manual verification
+              </p>
+            </div>
+
+            {/* Guidelines */}
+            <div className="px-6 md:px-10 mt-6">
+              <div className="flex gap-3 rounded-xl bg-muted/50 p-4 text-sm text-muted-foreground">
+                <Info className="h-5 w-5 shrink-0 text-champagne" />
+                <div>
+                  <span className="font-medium text-primary block mb-1">
+                    Upload Guidelines
+                  </span>
+                  • Max size 5MB per file
+                  <br />
+                  • Documents must be valid and unexpired
+                  <br />
+                  • All corners must be clearly visible
+                </div>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-6 md:px-10 py-8">
+              <Button
+                variant="ghost"
+                className="text-muted-foreground hover:text-primary"
+                onClick={() => navigate(-1)}
+              >
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Back
+              </Button>
+
+              <Button
+                className="btn-premium text-primary-foreground w-full sm:w-auto"
+                disabled={!canContinue}
+                onClick={() => navigate("/kyc/review-submit")}
+              >
+                Continue
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+
+              <Button
+                variant="link"
+                className="text-xs text-muted-foreground underline hover:text-primary"
+                onClick={() => navigate("/dashboard")}
+              >
+                Skip for now
+              </Button>
+            </div>
+          </Card>
         </motion.div>
-
-        {/* Status Banner */}
-        {renderStatusBanner()}
-
-        {/* Progress */}
-        <Card className="card-premium mb-8">
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between mb-4">
-              <span className="text-sm font-medium text-primary">Verification Progress</span>
-              <Badge variant={status === "approved" ? "default" : "secondary"}>
-                {progress}% Complete
-              </Badge>
-            </div>
-            <Progress value={progress} className="h-2" />
-            
-            {/* Steps */}
-            <div className="flex items-center justify-between mt-8">
-              {steps.map((s, index) => (
-                <div key={s.number} className="flex items-center">
-                  <div className={`flex flex-col items-center ${
-                    step >= s.number ? "text-primary" : "text-muted-foreground"
-                  }`}>
-                    <div className={`w-10 h-10 rounded-full flex items-center justify-center mb-2 ${
-                      step > s.number 
-                        ? "bg-emerald-500 text-white"
-                        : step === s.number
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-muted"
-                    }`}>
-                      {step > s.number ? (
-                        <CheckCircle className="h-5 w-5" />
-                      ) : (
-                        <s.icon className="h-5 w-5" />
-                      )}
-                    </div>
-                    <span className="text-xs font-medium">{s.title}</span>
-                  </div>
-                  {index < steps.length - 1 && (
-                    <div className={`w-24 h-0.5 mx-4 ${
-                      step > s.number ? "bg-emerald-500" : "bg-muted"
-                    }`} />
-                  )}
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Step Content */}
-        {status !== "approved" && status !== "pending" && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-          >
-            {step === 1 && (
-              <Card className="card-premium">
-                <CardHeader>
-                  <CardTitle className="font-display text-xl">Document Verification</CardTitle>
-                  <CardDescription>
-                    Upload your Aadhaar and PAN card for identity verification
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <FileUploadCard
-                    title="Aadhaar Card"
-                    description="Upload front side of your Aadhaar card"
-                    fileKey="aadhaar"
-                    icon={CreditCard}
-                  />
-                  <FileUploadCard
-                    title="PAN Card"
-                    description="Upload your PAN card"
-                    fileKey="pan"
-                    icon={CreditCard}
-                  />
-                  
-                  {/* Optional Selfie Upload */}
-                  <div className="pt-2">
-                    <FileUploadCard
-                      title="Selfie Verification (Optional)"
-                      description="Take a selfie using your phone's or device's camera"
-                      fileKey="selfie"
-                      icon={Camera}
-                    />
-                    <p className="text-xs text-muted-foreground mt-2 ml-16">
-                      Optional: Used for faster manual verification
-                    </p>
-                  </div>
-                  
-                  <div className="flex justify-end pt-4">
-                    <Button
-                      onClick={() => setStep(2)}
-                      disabled={!documents.aadhaar || !documents.pan}
-                      className="btn-premium text-primary-foreground"
-                    >
-                      Continue
-                      <ArrowRight className="ml-2 h-4 w-4" />
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
-            {step === 2 && (
-              <Card className="card-premium">
-                <CardHeader>
-                  <CardTitle className="font-display text-xl">Review & Submit</CardTitle>
-                  <CardDescription>
-                    Review your uploaded documents and submit for verification
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="p-4 rounded-xl bg-muted/50">
-                    <h4 className="font-medium text-primary mb-3">Uploaded Documents:</h4>
-                    <ul className="space-y-2 text-sm text-muted-foreground">
-                      <li className="flex items-center gap-2">
-                        <CheckCircle className="h-4 w-4 text-emerald-500" />
-                        Aadhaar Card: {documents.aadhaar?.name}
-                      </li>
-                      <li className="flex items-center gap-2">
-                        <CheckCircle className="h-4 w-4 text-emerald-500" />
-                        PAN Card: {documents.pan?.name}
-                      </li>
-                      {documents.selfie && (
-                        <li className="flex items-center gap-2">
-                          <CheckCircle className="h-4 w-4 text-emerald-500" />
-                          Selfie: {documents.selfie.name}
-                        </li>
-                      )}
-                    </ul>
-                  </div>
-
-                  <div className="p-4 rounded-xl bg-muted/50">
-                    <h4 className="font-medium text-primary mb-2">Verification Timeline:</h4>
-                    <ul className="space-y-2 text-sm text-muted-foreground">
-                      <li className="flex items-center gap-2">
-                        <Clock className="h-4 w-4 text-champagne" />
-                        Standard verification: 24-48 hours
-                      </li>
-                      {documents.selfie && (
-                        <li className="flex items-center gap-2">
-                          <Camera className="h-4 w-4 text-emerald-500" />
-                          Selfie provided: May expedite verification
-                        </li>
-                      )}
-                    </ul>
-                  </div>
-                  
-                  <div className="flex justify-between pt-4">
-                    <Button variant="outline" onClick={() => setStep(1)}>
-                      Back
-                    </Button>
-                    <Button
-                      className="btn-premium text-primary-foreground"
-                    >
-                      Submit for Review
-                      <ArrowRight className="ml-2 h-4 w-4" />
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-          </motion.div>
-        )}
-
-        {/* Info Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
-          <Card className="card-premium">
-            <CardContent className="pt-6">
-              <div className="flex items-start gap-4">
-                <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center">
-                  <Shield className="h-5 w-5 text-blue-500" />
-                </div>
-                <div>
-                  <h4 className="font-medium text-primary mb-1">Your Data is Secure</h4>
-                  <p className="text-sm text-muted-foreground">
-                    All documents are encrypted and stored securely. We comply with international data protection regulations.
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card className="card-premium">
-            <CardContent className="pt-6">
-              <div className="flex items-start gap-4">
-                <div className="w-10 h-10 rounded-xl bg-champagne/10 flex items-center justify-center">
-                  <Clock className="h-5 w-5 text-champagne" />
-                </div>
-                <div>
-                  <h4 className="font-medium text-primary mb-1">Quick Verification</h4>
-                  <p className="text-sm text-muted-foreground">
-                    Most verifications are completed within 24-48 hours. You'll receive an email once your status is updated.
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
       </div>
     </DashboardLayout>
   );
 };
+
+/* Upload Tile */
+const UploadBox = ({ 
+  title, 
+  desc, 
+  icon, 
+  isActive, 
+  onClick,
+  required,
+  optional
+}: { 
+  title: string;
+  desc: string;
+  icon: React.ReactNode;
+  isActive: boolean;
+  onClick: () => void;
+  required?: boolean;
+  optional?: boolean;
+}) => (
+  <div
+    onClick={onClick}
+    className={cn(
+      "relative flex flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed p-6 text-center cursor-pointer transition-all duration-200",
+      isActive
+        ? "border-emerald-500 bg-emerald-500/5"
+        : "border-border hover:border-champagne hover:bg-champagne/5"
+    )}
+  >
+    <div
+      className={cn(
+        "flex h-14 w-14 items-center justify-center rounded-xl transition-colors",
+        isActive
+          ? "bg-emerald-500/10 text-emerald-500"
+          : "bg-muted text-muted-foreground"
+      )}
+    >
+      {isActive ? <CheckCircle2 className="h-6 w-6" /> : icon}
+    </div>
+
+    <div className="flex items-center gap-2">
+      <p className="font-medium text-primary">{title}</p>
+      {optional && (
+        <span className="text-xs text-muted-foreground">(Optional)</span>
+      )}
+    </div>
+
+    <p className="text-xs text-muted-foreground leading-relaxed">
+      {desc}
+    </p>
+
+    {isActive && (
+      <span className="absolute top-3 right-3 rounded-full bg-emerald-500/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-emerald-600">
+        FILE ATTACHED
+      </span>
+    )}
+
+    {!isActive && (
+      <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1">
+        <UploadCloud className="h-4 w-4" />
+        <span>Click to upload</span>
+      </div>
+    )}
+  </div>
+);
 
 export default KYC;
