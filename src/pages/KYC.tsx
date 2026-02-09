@@ -28,17 +28,14 @@ const KYC = () => {
   const [status] = useState<KYCStatus>("pending");
   const [step, setStep] = useState(1);
   const [documents, setDocuments] = useState({
-    idFront: null as File | null,
-    idBack: null as File | null,
+    aadhaar: null as File | null,
+    pan: null as File | null,
     selfie: null as File | null,
-    businessLicense: null as File | null,
-    addressProof: null as File | null,
   });
 
   const steps = [
-    { number: 1, title: "Personal ID", icon: User },
-    { number: 2, title: "Business Docs", icon: Building },
-    { number: 3, title: "Verification", icon: Camera },
+    { number: 1, title: "Documents", icon: FileText },
+    { number: 2, title: "Verification", icon: Camera },
   ];
 
   const progress = status === "approved" ? 100 : status === "pending" ? 75 : status === "rejected" ? 0 : 25;
@@ -248,29 +245,42 @@ const KYC = () => {
             {step === 1 && (
               <Card className="card-premium">
                 <CardHeader>
-                  <CardTitle className="font-display text-xl">Personal Identification</CardTitle>
+                  <CardTitle className="font-display text-xl">Document Verification</CardTitle>
                   <CardDescription>
-                    Upload a valid government-issued ID (Passport, Driver's License, or National ID)
+                    Upload your Aadhaar and PAN card for identity verification
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <FileUploadCard
-                    title="ID Front"
-                    description="Upload the front side of your ID document"
-                    fileKey="idFront"
+                    title="Aadhaar Card"
+                    description="Upload front side of your Aadhaar card"
+                    fileKey="aadhaar"
                     icon={CreditCard}
                   />
                   <FileUploadCard
-                    title="ID Back"
-                    description="Upload the back side of your ID document"
-                    fileKey="idBack"
+                    title="PAN Card"
+                    description="Upload your PAN card"
+                    fileKey="pan"
                     icon={CreditCard}
                   />
+                  
+                  {/* Optional Selfie Upload */}
+                  <div className="pt-2">
+                    <FileUploadCard
+                      title="Selfie Verification (Optional)"
+                      description="Take a selfie using your phone's or device's camera"
+                      fileKey="selfie"
+                      icon={Camera}
+                    />
+                    <p className="text-xs text-muted-foreground mt-2 ml-16">
+                      Optional: Used for faster manual verification
+                    </p>
+                  </div>
                   
                   <div className="flex justify-end pt-4">
                     <Button
                       onClick={() => setStep(2)}
-                      disabled={!documents.idFront || !documents.idBack}
+                      disabled={!documents.aadhaar || !documents.pan}
                       className="btn-premium text-primary-foreground"
                     >
                       Continue
@@ -284,86 +294,53 @@ const KYC = () => {
             {step === 2 && (
               <Card className="card-premium">
                 <CardHeader>
-                  <CardTitle className="font-display text-xl">Business Documentation</CardTitle>
+                  <CardTitle className="font-display text-xl">Review & Submit</CardTitle>
                   <CardDescription>
-                    Upload documents to verify your business identity
+                    Review your uploaded documents and submit for verification
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <FileUploadCard
-                    title="Business License"
-                    description="Upload your business registration or license"
-                    fileKey="businessLicense"
-                    icon={FileText}
-                  />
-                  <FileUploadCard
-                    title="Proof of Address"
-                    description="Utility bill or bank statement (not older than 3 months)"
-                    fileKey="addressProof"
-                    icon={Building}
-                  />
+                  <div className="p-4 rounded-xl bg-muted/50">
+                    <h4 className="font-medium text-primary mb-3">Uploaded Documents:</h4>
+                    <ul className="space-y-2 text-sm text-muted-foreground">
+                      <li className="flex items-center gap-2">
+                        <CheckCircle className="h-4 w-4 text-emerald-500" />
+                        Aadhaar Card: {documents.aadhaar?.name}
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <CheckCircle className="h-4 w-4 text-emerald-500" />
+                        PAN Card: {documents.pan?.name}
+                      </li>
+                      {documents.selfie && (
+                        <li className="flex items-center gap-2">
+                          <CheckCircle className="h-4 w-4 text-emerald-500" />
+                          Selfie: {documents.selfie.name}
+                        </li>
+                      )}
+                    </ul>
+                  </div>
+
+                  <div className="p-4 rounded-xl bg-muted/50">
+                    <h4 className="font-medium text-primary mb-2">Verification Timeline:</h4>
+                    <ul className="space-y-2 text-sm text-muted-foreground">
+                      <li className="flex items-center gap-2">
+                        <Clock className="h-4 w-4 text-champagne" />
+                        Standard verification: 24-48 hours
+                      </li>
+                      {documents.selfie && (
+                        <li className="flex items-center gap-2">
+                          <Camera className="h-4 w-4 text-emerald-500" />
+                          Selfie provided: May expedite verification
+                        </li>
+                      )}
+                    </ul>
+                  </div>
                   
                   <div className="flex justify-between pt-4">
                     <Button variant="outline" onClick={() => setStep(1)}>
                       Back
                     </Button>
                     <Button
-                      onClick={() => setStep(3)}
-                      disabled={!documents.businessLicense || !documents.addressProof}
-                      className="btn-premium text-primary-foreground"
-                    >
-                      Continue
-                      <ArrowRight className="ml-2 h-4 w-4" />
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
-            {step === 3 && (
-              <Card className="card-premium">
-                <CardHeader>
-                  <CardTitle className="font-display text-xl">Selfie Verification</CardTitle>
-                  <CardDescription>
-                    Take a selfie holding your ID document for identity verification
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <FileUploadCard
-                    title="Selfie with ID"
-                    description="Take a clear photo of yourself holding your ID next to your face"
-                    fileKey="selfie"
-                    icon={Camera}
-                  />
-
-                  <div className="p-4 rounded-xl bg-muted/50">
-                    <h4 className="font-medium text-primary mb-2">Photo Requirements:</h4>
-                    <ul className="space-y-2 text-sm text-muted-foreground">
-                      <li className="flex items-center gap-2">
-                        <CheckCircle className="h-4 w-4 text-emerald-500" />
-                        Your face should be clearly visible
-                      </li>
-                      <li className="flex items-center gap-2">
-                        <CheckCircle className="h-4 w-4 text-emerald-500" />
-                        Hold your ID next to your face
-                      </li>
-                      <li className="flex items-center gap-2">
-                        <CheckCircle className="h-4 w-4 text-emerald-500" />
-                        ID details should be readable
-                      </li>
-                      <li className="flex items-center gap-2">
-                        <CheckCircle className="h-4 w-4 text-emerald-500" />
-                        Good lighting, no shadows
-                      </li>
-                    </ul>
-                  </div>
-                  
-                  <div className="flex justify-between pt-4">
-                    <Button variant="outline" onClick={() => setStep(2)}>
-                      Back
-                    </Button>
-                    <Button
-                      disabled={!documents.selfie}
                       className="btn-premium text-primary-foreground"
                     >
                       Submit for Review
