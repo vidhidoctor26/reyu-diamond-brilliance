@@ -12,6 +12,8 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import DashboardLayout from "@/components/layout/DashboardLayout";
@@ -25,11 +27,29 @@ const KYC = () => {
     selfie: false,
   });
 
+  const [docNumbers, setDocNumbers] = useState({
+    aadhaar: "",
+    pan: "",
+  });
+
   const toggleUpload = (key: "aadhaar" | "pan" | "selfie") => {
     setUploads((prev) => ({ ...prev, [key]: !prev[key] }));
   };
 
-  const canContinue = uploads.aadhaar && uploads.pan;
+  const handleDocNumberChange = (key: "aadhaar" | "pan", value: string) => {
+    if (key === "aadhaar") {
+      const digits = value.replace(/\D/g, "").slice(0, 12);
+      setDocNumbers((prev) => ({ ...prev, aadhaar: digits }));
+    } else {
+      const formatted = value.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 10);
+      setDocNumbers((prev) => ({ ...prev, pan: formatted }));
+    }
+  };
+
+  const isAadhaarValid = docNumbers.aadhaar.length === 12;
+  const isPanValid = /^[A-Z]{5}[0-9]{4}[A-Z]$/.test(docNumbers.pan);
+
+  const canContinue = uploads.aadhaar && uploads.pan && isAadhaarValid && isPanValid;
 
   return (
     <DashboardLayout>
@@ -64,23 +84,59 @@ const KYC = () => {
 
             {/* Upload Grid – Required Documents */}
             <div className="px-6 md:px-10 grid gap-4 sm:grid-cols-2">
-              <UploadBox
-                title="Aadhaar Card"
-                desc="Front side of your Aadhaar"
-                icon={<FileText className="h-6 w-6" />}
-                isActive={uploads.aadhaar}
-                onClick={() => toggleUpload("aadhaar")}
-                required
-              />
+              <div className="space-y-3">
+                <UploadBox
+                  title="Aadhaar Card"
+                  desc="Front side of your Aadhaar"
+                  icon={<FileText className="h-6 w-6" />}
+                  isActive={uploads.aadhaar}
+                  onClick={() => toggleUpload("aadhaar")}
+                  required
+                />
+                <div className="space-y-1.5">
+                  <Label htmlFor="aadhaar-number" className="text-xs text-muted-foreground">
+                    Aadhaar Number <span className="text-destructive">*</span>
+                  </Label>
+                  <Input
+                    id="aadhaar-number"
+                    placeholder="Enter 12-digit Aadhaar number"
+                    value={docNumbers.aadhaar}
+                    onChange={(e) => handleDocNumberChange("aadhaar", e.target.value)}
+                    maxLength={12}
+                    className="rounded-xl"
+                  />
+                  {docNumbers.aadhaar.length > 0 && !isAadhaarValid && (
+                    <p className="text-[11px] text-destructive">Must be exactly 12 digits</p>
+                  )}
+                </div>
+              </div>
 
-              <UploadBox
-                title="PAN Card"
-                desc="Clear copy of your PAN"
-                icon={<FileText className="h-6 w-6" />}
-                isActive={uploads.pan}
-                onClick={() => toggleUpload("pan")}
-                required
-              />
+              <div className="space-y-3">
+                <UploadBox
+                  title="PAN Card"
+                  desc="Clear copy of your PAN"
+                  icon={<FileText className="h-6 w-6" />}
+                  isActive={uploads.pan}
+                  onClick={() => toggleUpload("pan")}
+                  required
+                />
+                <div className="space-y-1.5">
+                  <Label htmlFor="pan-number" className="text-xs text-muted-foreground">
+                    PAN Number <span className="text-destructive">*</span>
+                  </Label>
+                  <Input
+                    id="pan-number"
+                    placeholder="Enter 10-character PAN (e.g. ABCDE1234F)"
+                    value={docNumbers.pan}
+                    onChange={(e) => handleDocNumberChange("pan", e.target.value)}
+                    maxLength={10}
+                    className="rounded-xl uppercase"
+                  />
+                  {docNumbers.pan.length > 0 && !isPanValid && (
+                    <p className="text-[11px] text-destructive">Format: ABCDE1234F</p>
+                  )}
+                </div>
+              </div>
             </div>
 
             {/* Optional Selfie Upload - Full Width */}
