@@ -1,23 +1,36 @@
-import { useState } from "react";
-import { motion } from "framer-motion";
-import { 
-  Heart, 
-  Diamond, 
-  DollarSign, 
-  Bell, 
-  Sliders,
-  Save,
-  RotateCcw
+import { useState, useCallback } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  Plus,
+  Diamond,
+  Pencil,
+  Trash2,
+  X,
+  Search,
 } from "lucide-react";
 import DashboardShell from "@/components/layout/DashboardShell";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
+import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Switch } from "@/components/ui/switch";
-import { Slider } from "@/components/ui/slider";
+import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import {
   Select,
   SelectContent,
@@ -25,465 +38,410 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { toast } from "@/hooks/use-toast";
 
-const diamondShapes = [
-  "Round", "Princess", "Cushion", "Oval", "Emerald", 
-  "Pear", "Marquise", "Radiant", "Asscher", "Heart"
+/* ── Types ─────────────────────────────────────── */
+
+interface Preference {
+  id: string;
+  shape: string;
+  caratMin: number;
+  caratMax: number;
+  color: string;
+  clarity: string;
+  budgetMin: number;
+  budgetMax: number;
+  certification: string;
+  createdAt: string;
+}
+
+type PreferenceForm = Omit<Preference, "id" | "createdAt">;
+
+const EMPTY_FORM: PreferenceForm = {
+  shape: "",
+  caratMin: 0.5,
+  caratMax: 3,
+  color: "",
+  clarity: "",
+  budgetMin: 1000,
+  budgetMax: 50000,
+  certification: "",
+};
+
+/* ── Options ───────────────────────────────────── */
+
+const SHAPES = ["Round", "Princess", "Cushion", "Oval", "Emerald", "Pear", "Marquise", "Radiant", "Asscher", "Heart"];
+const COLORS = ["D", "E", "F", "G", "H", "I", "J", "K", "L", "M"];
+const CLARITIES = ["FL", "IF", "VVS1", "VVS2", "VS1", "VS2", "SI1", "SI2", "I1", "I2"];
+const CERTIFICATIONS = ["GIA", "IGI", "AGS", "HRD", "EGL"];
+
+/* ── Mock seed data ────────────────────────────── */
+
+const SEED: Preference[] = [
+  {
+    id: "1",
+    shape: "Round",
+    caratMin: 1,
+    caratMax: 2.5,
+    color: "D",
+    clarity: "VVS1",
+    budgetMin: 5000,
+    budgetMax: 25000,
+    certification: "GIA",
+    createdAt: "2026-02-10T10:30:00Z",
+  },
+  {
+    id: "2",
+    shape: "Oval",
+    caratMin: 0.8,
+    caratMax: 1.5,
+    color: "F",
+    clarity: "VS1",
+    budgetMin: 3000,
+    budgetMax: 15000,
+    certification: "IGI",
+    createdAt: "2026-02-12T14:15:00Z",
+  },
 ];
 
-const diamondColors = ["D", "E", "F", "G", "H", "I", "J", "K", "L", "M"];
-const diamondClarity = ["FL", "IF", "VVS1", "VVS2", "VS1", "VS2", "SI1", "SI2", "I1", "I2"];
-const diamondCuts = ["Excellent", "Very Good", "Good", "Fair"];
+/* ── Page Component ────────────────────────────── */
 
 const Preferences = () => {
-  const [selectedShapes, setSelectedShapes] = useState<string[]>(["Round", "Princess", "Oval"]);
-  const [selectedColors, setSelectedColors] = useState<string[]>(["D", "E", "F", "G"]);
-  const [selectedClarity, setSelectedClarity] = useState<string[]>(["VVS1", "VVS2", "VS1"]);
-  const [selectedCuts, setSelectedCuts] = useState<string[]>(["Excellent", "Very Good"]);
-  const [caratRange, setCaratRange] = useState([0.5, 3.0]);
-  const [priceRange, setPriceRange] = useState([1000, 50000]);
-  const [notifications, setNotifications] = useState({
-    newListings: true,
-    priceDrops: true,
-    bidUpdates: true,
-    dealAlerts: true,
-    weeklyDigest: false,
-    marketTrends: true,
-  });
+  const [preferences, setPreferences] = useState<Preference[]>(SEED);
+  const [loading, setLoading] = useState(false);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [form, setForm] = useState<PreferenceForm>(EMPTY_FORM);
 
-  const toggleSelection = (
-    item: string, 
-    selected: string[], 
-    setSelected: React.Dispatch<React.SetStateAction<string[]>>
-  ) => {
-    if (selected.includes(item)) {
-      setSelected(selected.filter(s => s !== item));
-    } else {
-      setSelected([...selected, item]);
+  /* ── Handlers ── */
+
+  const openCreate = () => {
+    setEditingId(null);
+    setForm(EMPTY_FORM);
+    setModalOpen(true);
+  };
+
+  const openEdit = (p: Preference) => {
+    setEditingId(p.id);
+    setForm({
+      shape: p.shape,
+      caratMin: p.caratMin,
+      caratMax: p.caratMax,
+      color: p.color,
+      clarity: p.clarity,
+      budgetMin: p.budgetMin,
+      budgetMax: p.budgetMax,
+      certification: p.certification,
+    });
+    setModalOpen(true);
+  };
+
+  const handleSave = useCallback(() => {
+    if (!form.shape || !form.color || !form.clarity || !form.certification) {
+      toast({ title: "Missing fields", description: "Please fill all required fields.", variant: "destructive" });
+      return;
     }
+
+    if (editingId) {
+      setPreferences((prev) =>
+        prev.map((p) => (p.id === editingId ? { ...p, ...form } : p))
+      );
+      toast({ title: "Preference updated", description: "Your requirement has been saved." });
+    } else {
+      const newPref: Preference = {
+        ...form,
+        id: crypto.randomUUID(),
+        createdAt: new Date().toISOString(),
+      };
+      setPreferences((prev) => [newPref, ...prev]);
+      toast({ title: "Preference created", description: "New requirement has been added." });
+    }
+
+    setModalOpen(false);
+    setForm(EMPTY_FORM);
+    setEditingId(null);
+  }, [form, editingId]);
+
+  const handleDelete = useCallback(() => {
+    if (!deleteId) return;
+    setPreferences((prev) => prev.filter((p) => p.id !== deleteId));
+    setDeleteId(null);
+    toast({ title: "Preference deleted", description: "Requirement removed successfully." });
+  }, [deleteId]);
+
+  const updateField = <K extends keyof PreferenceForm>(key: K, value: PreferenceForm[K]) => {
+    setForm((prev) => ({ ...prev, [key]: value }));
   };
 
   return (
     <DashboardShell>
-      <div className="p-6 lg:p-8">
+      <div className="p-6 lg:p-8 max-w-5xl mx-auto">
         {/* Header */}
         <motion.div
-          initial={{ opacity: 0, y: -20 }}
+          initial={{ opacity: 0, y: -16 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-8"
+          className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8"
         >
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-display font-bold text-primary flex items-center gap-3">
-                <Heart className="h-8 w-8 text-champagne" />
-                Diamond Preferences
-              </h1>
-              <p className="text-muted-foreground mt-1">
-                Set your preferences to receive personalized diamond recommendations
-              </p>
-            </div>
-            <div className="flex gap-3">
-              <Button variant="outline" className="gap-2">
-                <RotateCcw className="h-4 w-4" />
-                Reset
-              </Button>
-              <Button className="gap-2 bg-champagne hover:bg-champagne/90 text-champagne-foreground">
-                <Save className="h-4 w-4" />
-                Save Preferences
-              </Button>
-            </div>
+          <div>
+            <h1 className="text-2xl font-display font-bold text-foreground">
+              My Preferences
+            </h1>
+            <p className="text-sm text-muted-foreground mt-1">
+              Manage your diamond requirements to receive tailored recommendations.
+            </p>
           </div>
+          <Button onClick={openCreate} className="gap-2 shrink-0">
+            <Plus className="h-4 w-4" />
+            Create Preference
+          </Button>
         </motion.div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Diamond Shape Preferences */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-          >
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Diamond className="h-5 w-5 text-champagne" />
-                  Diamond Shape
-                </CardTitle>
-                <CardDescription>
-                  Select your preferred diamond shapes
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="flex flex-wrap gap-2">
-                  {diamondShapes.map((shape) => (
-                    <Badge
-                      key={shape}
-                      variant={selectedShapes.includes(shape) ? "default" : "outline"}
-                      className={`cursor-pointer transition-all ${
-                        selectedShapes.includes(shape) 
-                          ? "bg-champagne text-champagne-foreground hover:bg-champagne/90" 
-                          : "hover:bg-muted"
-                      }`}
-                      onClick={() => toggleSelection(shape, selectedShapes, setSelectedShapes)}
-                    >
-                      {shape}
-                    </Badge>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-
-          {/* Color Preferences */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.15 }}
-          >
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Sliders className="h-5 w-5 text-champagne" />
-                  Color Grade
-                </CardTitle>
-                <CardDescription>
-                  Select acceptable color grades (D is colorless)
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="flex flex-wrap gap-2">
-                  {diamondColors.map((color) => (
-                    <Badge
-                      key={color}
-                      variant={selectedColors.includes(color) ? "default" : "outline"}
-                      className={`cursor-pointer transition-all min-w-[40px] justify-center ${
-                        selectedColors.includes(color) 
-                          ? "bg-champagne text-champagne-foreground hover:bg-champagne/90" 
-                          : "hover:bg-muted"
-                      }`}
-                      onClick={() => toggleSelection(color, selectedColors, setSelectedColors)}
-                    >
-                      {color}
-                    </Badge>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-
-          {/* Clarity Preferences */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-          >
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Diamond className="h-5 w-5 text-champagne" />
-                  Clarity Grade
-                </CardTitle>
-                <CardDescription>
-                  Select acceptable clarity grades
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="flex flex-wrap gap-2">
-                  {diamondClarity.map((clarity) => (
-                    <Badge
-                      key={clarity}
-                      variant={selectedClarity.includes(clarity) ? "default" : "outline"}
-                      className={`cursor-pointer transition-all ${
-                        selectedClarity.includes(clarity) 
-                          ? "bg-champagne text-champagne-foreground hover:bg-champagne/90" 
-                          : "hover:bg-muted"
-                      }`}
-                      onClick={() => toggleSelection(clarity, selectedClarity, setSelectedClarity)}
-                    >
-                      {clarity}
-                    </Badge>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-
-          {/* Cut Preferences */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.25 }}
-          >
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Sliders className="h-5 w-5 text-champagne" />
-                  Cut Quality
-                </CardTitle>
-                <CardDescription>
-                  Select acceptable cut grades
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="flex flex-wrap gap-2">
-                  {diamondCuts.map((cut) => (
-                    <Badge
-                      key={cut}
-                      variant={selectedCuts.includes(cut) ? "default" : "outline"}
-                      className={`cursor-pointer transition-all ${
-                        selectedCuts.includes(cut) 
-                          ? "bg-champagne text-champagne-foreground hover:bg-champagne/90" 
-                          : "hover:bg-muted"
-                      }`}
-                      onClick={() => toggleSelection(cut, selectedCuts, setSelectedCuts)}
-                    >
-                      {cut}
-                    </Badge>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-
-          {/* Carat Range */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-          >
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Diamond className="h-5 w-5 text-champagne" />
-                  Carat Weight
-                </CardTitle>
-                <CardDescription>
-                  Set your preferred carat range
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Min: {caratRange[0]} ct</span>
-                  <span className="text-muted-foreground">Max: {caratRange[1]} ct</span>
-                </div>
-                <Slider
-                  value={caratRange}
-                  onValueChange={setCaratRange}
-                  min={0.1}
-                  max={10}
-                  step={0.1}
-                  className="w-full"
-                />
-                <div className="flex gap-4">
-                  <div className="flex-1">
-                    <Label htmlFor="min-carat" className="text-xs text-muted-foreground">Minimum</Label>
-                    <Input
-                      id="min-carat"
-                      type="number"
-                      value={caratRange[0]}
-                      onChange={(e) => setCaratRange([parseFloat(e.target.value), caratRange[1]])}
-                      step={0.1}
-                      min={0.1}
-                      className="mt-1"
-                    />
-                  </div>
-                  <div className="flex-1">
-                    <Label htmlFor="max-carat" className="text-xs text-muted-foreground">Maximum</Label>
-                    <Input
-                      id="max-carat"
-                      type="number"
-                      value={caratRange[1]}
-                      onChange={(e) => setCaratRange([caratRange[0], parseFloat(e.target.value)])}
-                      step={0.1}
-                      max={10}
-                      className="mt-1"
-                    />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-
-          {/* Price Range */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.35 }}
-          >
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <DollarSign className="h-5 w-5 text-champagne" />
-                  Price Range
-                </CardTitle>
-                <CardDescription>
-                  Set your budget range (USD)
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">${priceRange[0].toLocaleString()}</span>
-                  <span className="text-muted-foreground">${priceRange[1].toLocaleString()}</span>
-                </div>
-                <Slider
-                  value={priceRange}
-                  onValueChange={setPriceRange}
-                  min={100}
-                  max={500000}
-                  step={100}
-                  className="w-full"
-                />
-                <div className="flex gap-4">
-                  <div className="flex-1">
-                    <Label htmlFor="min-price" className="text-xs text-muted-foreground">Minimum</Label>
-                    <Input
-                      id="min-price"
-                      type="number"
-                      value={priceRange[0]}
-                      onChange={(e) => setPriceRange([parseInt(e.target.value), priceRange[1]])}
-                      step={100}
-                      min={100}
-                      className="mt-1"
-                    />
-                  </div>
-                  <div className="flex-1">
-                    <Label htmlFor="max-price" className="text-xs text-muted-foreground">Maximum</Label>
-                    <Input
-                      id="max-price"
-                      type="number"
-                      value={priceRange[1]}
-                      onChange={(e) => setPriceRange([priceRange[0], parseInt(e.target.value)])}
-                      step={100}
-                      max={500000}
-                      className="mt-1"
-                    />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-
-          {/* Notification Preferences - Full Width */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4 }}
-            className="lg:col-span-2"
-          >
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Bell className="h-5 w-5 text-champagne" />
-                  Notification Preferences
-                </CardTitle>
-                <CardDescription>
-                  Choose which notifications you'd like to receive
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  <div className="flex items-center justify-between space-x-4">
-                    <div className="space-y-0.5">
-                      <Label htmlFor="new-listings">New Listings</Label>
-                      <p className="text-xs text-muted-foreground">
-                        Get notified when matching diamonds are listed
-                      </p>
-                    </div>
-                    <Switch
-                      id="new-listings"
-                      checked={notifications.newListings}
-                      onCheckedChange={(checked) => 
-                        setNotifications({ ...notifications, newListings: checked })
-                      }
-                    />
-                  </div>
-                  
-                  <div className="flex items-center justify-between space-x-4">
-                    <div className="space-y-0.5">
-                      <Label htmlFor="price-drops">Price Drops</Label>
-                      <p className="text-xs text-muted-foreground">
-                        Alerts when prices drop on saved items
-                      </p>
-                    </div>
-                    <Switch
-                      id="price-drops"
-                      checked={notifications.priceDrops}
-                      onCheckedChange={(checked) => 
-                        setNotifications({ ...notifications, priceDrops: checked })
-                      }
-                    />
-                  </div>
-
-                  <div className="flex items-center justify-between space-x-4">
-                    <div className="space-y-0.5">
-                      <Label htmlFor="bid-updates">Bid Updates</Label>
-                      <p className="text-xs text-muted-foreground">
-                        Updates on your active bids
-                      </p>
-                    </div>
-                    <Switch
-                      id="bid-updates"
-                      checked={notifications.bidUpdates}
-                      onCheckedChange={(checked) => 
-                        setNotifications({ ...notifications, bidUpdates: checked })
-                      }
-                    />
-                  </div>
-
-                  <div className="flex items-center justify-between space-x-4">
-                    <div className="space-y-0.5">
-                      <Label htmlFor="deal-alerts">Deal Alerts</Label>
-                      <p className="text-xs text-muted-foreground">
-                        Notifications for deal status changes
-                      </p>
-                    </div>
-                    <Switch
-                      id="deal-alerts"
-                      checked={notifications.dealAlerts}
-                      onCheckedChange={(checked) => 
-                        setNotifications({ ...notifications, dealAlerts: checked })
-                      }
-                    />
-                  </div>
-
-                  <div className="flex items-center justify-between space-x-4">
-                    <div className="space-y-0.5">
-                      <Label htmlFor="weekly-digest">Weekly Digest</Label>
-                      <p className="text-xs text-muted-foreground">
-                        Weekly summary of market activity
-                      </p>
-                    </div>
-                    <Switch
-                      id="weekly-digest"
-                      checked={notifications.weeklyDigest}
-                      onCheckedChange={(checked) => 
-                        setNotifications({ ...notifications, weeklyDigest: checked })
-                      }
-                    />
-                  </div>
-
-                  <div className="flex items-center justify-between space-x-4">
-                    <div className="space-y-0.5">
-                      <Label htmlFor="market-trends">Market Trends</Label>
-                      <p className="text-xs text-muted-foreground">
-                        Insights on diamond market trends
-                      </p>
-                    </div>
-                    <Switch
-                      id="market-trends"
-                      checked={notifications.marketTrends}
-                      onCheckedChange={(checked) => 
-                        setNotifications({ ...notifications, marketTrends: checked })
-                      }
-                    />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-        </div>
+        {/* List */}
+        {loading ? (
+          <div className="space-y-4">
+            {[1, 2, 3].map((i) => (
+              <Skeleton key={i} className="h-28 rounded-xl" />
+            ))}
+          </div>
+        ) : preferences.length === 0 ? (
+          <EmptyState onCreate={openCreate} />
+        ) : (
+          <div className="space-y-4">
+            <AnimatePresence mode="popLayout">
+              {preferences.map((p, i) => (
+                <motion.div
+                  key={p.id}
+                  layout
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  transition={{ delay: i * 0.04 }}
+                >
+                  <PreferenceCard
+                    preference={p}
+                    onEdit={() => openEdit(p)}
+                    onDelete={() => setDeleteId(p.id)}
+                  />
+                </motion.div>
+              ))}
+            </AnimatePresence>
+          </div>
+        )}
       </div>
+
+      {/* Create / Edit Modal */}
+      <Dialog open={modalOpen} onOpenChange={setModalOpen}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="font-display">
+              {editingId ? "Edit Preference" : "Create Preference"}
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="grid gap-5 py-2">
+            {/* Shape */}
+            <Field label="Shape">
+              <Select value={form.shape} onValueChange={(v) => updateField("shape", v)}>
+                <SelectTrigger className="rounded-xl"><SelectValue placeholder="Select shape" /></SelectTrigger>
+                <SelectContent>
+                  {SHAPES.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </Field>
+
+            {/* Carat Range */}
+            <div className="grid grid-cols-2 gap-4">
+              <Field label="Carat Min">
+                <Input
+                  type="number"
+                  step={0.1}
+                  min={0.1}
+                  value={form.caratMin}
+                  onChange={(e) => updateField("caratMin", parseFloat(e.target.value) || 0)}
+                  className="rounded-xl"
+                />
+              </Field>
+              <Field label="Carat Max">
+                <Input
+                  type="number"
+                  step={0.1}
+                  min={0.1}
+                  value={form.caratMax}
+                  onChange={(e) => updateField("caratMax", parseFloat(e.target.value) || 0)}
+                  className="rounded-xl"
+                />
+              </Field>
+            </div>
+
+            {/* Color */}
+            <Field label="Color">
+              <Select value={form.color} onValueChange={(v) => updateField("color", v)}>
+                <SelectTrigger className="rounded-xl"><SelectValue placeholder="Select color" /></SelectTrigger>
+                <SelectContent>
+                  {COLORS.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </Field>
+
+            {/* Clarity */}
+            <Field label="Clarity">
+              <Select value={form.clarity} onValueChange={(v) => updateField("clarity", v)}>
+                <SelectTrigger className="rounded-xl"><SelectValue placeholder="Select clarity" /></SelectTrigger>
+                <SelectContent>
+                  {CLARITIES.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </Field>
+
+            {/* Budget Range */}
+            <div className="grid grid-cols-2 gap-4">
+              <Field label="Budget Min ($)">
+                <Input
+                  type="number"
+                  step={100}
+                  min={0}
+                  value={form.budgetMin}
+                  onChange={(e) => updateField("budgetMin", parseInt(e.target.value) || 0)}
+                  className="rounded-xl"
+                />
+              </Field>
+              <Field label="Budget Max ($)">
+                <Input
+                  type="number"
+                  step={100}
+                  min={0}
+                  value={form.budgetMax}
+                  onChange={(e) => updateField("budgetMax", parseInt(e.target.value) || 0)}
+                  className="rounded-xl"
+                />
+              </Field>
+            </div>
+
+            {/* Certification */}
+            <Field label="Certification">
+              <Select value={form.certification} onValueChange={(v) => updateField("certification", v)}>
+                <SelectTrigger className="rounded-xl"><SelectValue placeholder="Select certification" /></SelectTrigger>
+                <SelectContent>
+                  {CERTIFICATIONS.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </Field>
+          </div>
+
+          <div className="flex justify-end gap-3 pt-2">
+            <Button variant="outline" onClick={() => setModalOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleSave}>
+              {editingId ? "Update" : "Save"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation */}
+      <AlertDialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="font-display">Delete Preference</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently remove this requirement. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </DashboardShell>
   );
 };
+
+/* ── Sub-components ────────────────────────────── */
+
+const Field = ({ label, children }: { label: string; children: React.ReactNode }) => (
+  <div className="space-y-1.5">
+    <Label className="text-xs font-medium text-muted-foreground">{label}</Label>
+    {children}
+  </div>
+);
+
+const PreferenceCard = ({
+  preference: p,
+  onEdit,
+  onDelete,
+}: {
+  preference: Preference;
+  onEdit: () => void;
+  onDelete: () => void;
+}) => (
+  <Card className="px-5 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-xl shadow-soft border-border/60">
+    <div className="flex items-start gap-4 min-w-0">
+      <div className="h-10 w-10 rounded-lg bg-secondary flex items-center justify-center shrink-0">
+        <Diamond className="h-5 w-5 text-accent" />
+      </div>
+      <div className="min-w-0">
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="font-medium text-sm text-foreground">{p.shape}</span>
+          <Badge variant="secondary" className="text-[11px] font-normal">
+            {p.caratMin}–{p.caratMax} ct
+          </Badge>
+          <Badge variant="secondary" className="text-[11px] font-normal">
+            {p.color} · {p.clarity}
+          </Badge>
+          <Badge variant="outline" className="text-[11px] font-normal">
+            {p.certification}
+          </Badge>
+        </div>
+        <p className="text-xs text-muted-foreground mt-1">
+          ${p.budgetMin.toLocaleString()} – ${p.budgetMax.toLocaleString()} · Created{" "}
+          {new Date(p.createdAt).toLocaleDateString("en-IN", {
+            day: "numeric",
+            month: "short",
+            year: "numeric",
+          })}
+        </p>
+      </div>
+    </div>
+
+    <div className="flex items-center gap-2 shrink-0">
+      <Button variant="ghost" size="icon" onClick={onEdit} className="h-8 w-8">
+        <Pencil className="h-4 w-4" />
+      </Button>
+      <Button variant="ghost" size="icon" onClick={onDelete} className="h-8 w-8 text-destructive hover:text-destructive">
+        <Trash2 className="h-4 w-4" />
+      </Button>
+    </div>
+  </Card>
+);
+
+const EmptyState = ({ onCreate }: { onCreate: () => void }) => (
+  <motion.div
+    initial={{ opacity: 0, scale: 0.96 }}
+    animate={{ opacity: 1, scale: 1 }}
+    className="flex flex-col items-center justify-center py-20 text-center"
+  >
+    <div className="h-16 w-16 rounded-2xl bg-secondary flex items-center justify-center mb-4">
+      <Search className="h-7 w-7 text-muted-foreground" />
+    </div>
+    <h3 className="font-display text-lg font-semibold text-foreground mb-1">
+      No preferences yet
+    </h3>
+    <p className="text-sm text-muted-foreground mb-6 max-w-sm">
+      Create your first diamond requirement and we'll match listings that fit your criteria.
+    </p>
+    <Button onClick={onCreate} className="gap-2">
+      <Plus className="h-4 w-4" />
+      Create Preference
+    </Button>
+  </motion.div>
+);
 
 export default Preferences;
