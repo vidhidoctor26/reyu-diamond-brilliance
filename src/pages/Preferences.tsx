@@ -1,26 +1,12 @@
 import { useState, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import {
-  Plus,
-  Diamond,
-  Pencil,
-  Trash2,
-  X,
-  Search,
-} from "lucide-react";
+import { Plus, Diamond, Pencil, Trash2, Search } from "lucide-react";
 import DashboardShell from "@/components/layout/DashboardShell";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -31,13 +17,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
 
 /* ── Types ─────────────────────────────────────── */
@@ -54,26 +33,6 @@ interface Preference {
   certification: string;
   createdAt: string;
 }
-
-type PreferenceForm = Omit<Preference, "id" | "createdAt">;
-
-const EMPTY_FORM: PreferenceForm = {
-  shape: "",
-  caratMin: 0.5,
-  caratMax: 3,
-  color: "",
-  clarity: "",
-  budgetMin: 1000,
-  budgetMax: 50000,
-  certification: "",
-};
-
-/* ── Options ───────────────────────────────────── */
-
-const SHAPES = ["Round", "Princess", "Cushion", "Oval", "Emerald", "Pear", "Marquise", "Radiant", "Asscher", "Heart"];
-const COLORS = ["D", "E", "F", "G", "H", "I", "J", "K", "L", "M"];
-const CLARITIES = ["FL", "IF", "VVS1", "VVS2", "VS1", "VS2", "SI1", "SI2", "I1", "I2"];
-const CERTIFICATIONS = ["GIA", "IGI", "AGS", "HRD", "EGL"];
 
 /* ── Mock seed data ────────────────────────────── */
 
@@ -107,61 +66,30 @@ const SEED: Preference[] = [
 /* ── Page Component ────────────────────────────── */
 
 const Preferences = () => {
+  const navigate = useNavigate();
   const [preferences, setPreferences] = useState<Preference[]>(SEED);
-  const [loading, setLoading] = useState(false);
-  const [modalOpen, setModalOpen] = useState(false);
-  const [editingId, setEditingId] = useState<string | null>(null);
+  const [loading] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
-  const [form, setForm] = useState<PreferenceForm>(EMPTY_FORM);
 
-  /* ── Handlers ── */
+  const handleCreate = () => navigate("/user/preferences/new");
 
-  const openCreate = () => {
-    setEditingId(null);
-    setForm(EMPTY_FORM);
-    setModalOpen(true);
+  const handleEdit = (p: Preference) => {
+    // Store form data in sessionStorage for the edit page to pick up
+    sessionStorage.setItem(
+      `pref_edit_${p.id}`,
+      JSON.stringify({
+        shape: p.shape,
+        caratMin: p.caratMin,
+        caratMax: p.caratMax,
+        color: p.color,
+        clarity: p.clarity,
+        budgetMin: p.budgetMin,
+        budgetMax: p.budgetMax,
+        certification: p.certification,
+      })
+    );
+    navigate(`/user/preferences/${p.id}/edit`);
   };
-
-  const openEdit = (p: Preference) => {
-    setEditingId(p.id);
-    setForm({
-      shape: p.shape,
-      caratMin: p.caratMin,
-      caratMax: p.caratMax,
-      color: p.color,
-      clarity: p.clarity,
-      budgetMin: p.budgetMin,
-      budgetMax: p.budgetMax,
-      certification: p.certification,
-    });
-    setModalOpen(true);
-  };
-
-  const handleSave = useCallback(() => {
-    if (!form.shape || !form.color || !form.clarity || !form.certification) {
-      toast({ title: "Missing fields", description: "Please fill all required fields.", variant: "destructive" });
-      return;
-    }
-
-    if (editingId) {
-      setPreferences((prev) =>
-        prev.map((p) => (p.id === editingId ? { ...p, ...form } : p))
-      );
-      toast({ title: "Preference updated", description: "Your requirement has been saved." });
-    } else {
-      const newPref: Preference = {
-        ...form,
-        id: crypto.randomUUID(),
-        createdAt: new Date().toISOString(),
-      };
-      setPreferences((prev) => [newPref, ...prev]);
-      toast({ title: "Preference created", description: "New requirement has been added." });
-    }
-
-    setModalOpen(false);
-    setForm(EMPTY_FORM);
-    setEditingId(null);
-  }, [form, editingId]);
 
   const handleDelete = useCallback(() => {
     if (!deleteId) return;
@@ -169,10 +97,6 @@ const Preferences = () => {
     setDeleteId(null);
     toast({ title: "Preference deleted", description: "Requirement removed successfully." });
   }, [deleteId]);
-
-  const updateField = <K extends keyof PreferenceForm>(key: K, value: PreferenceForm[K]) => {
-    setForm((prev) => ({ ...prev, [key]: value }));
-  };
 
   return (
     <DashboardShell>
@@ -184,14 +108,12 @@ const Preferences = () => {
           className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8"
         >
           <div>
-            <h1 className="text-2xl font-display font-bold text-foreground">
-              My Preferences
-            </h1>
+            <h1 className="text-2xl font-display font-bold text-foreground">My Preferences</h1>
             <p className="text-sm text-muted-foreground mt-1">
               Manage your diamond requirements to receive tailored recommendations.
             </p>
           </div>
-          <Button onClick={openCreate} className="gap-2 shrink-0">
+          <Button onClick={handleCreate} className="gap-2 shrink-0">
             <Plus className="h-4 w-4" />
             Create Preference
           </Button>
@@ -205,7 +127,7 @@ const Preferences = () => {
             ))}
           </div>
         ) : preferences.length === 0 ? (
-          <EmptyState onCreate={openCreate} />
+          <EmptyState onCreate={handleCreate} />
         ) : (
           <div className="space-y-4">
             <AnimatePresence mode="popLayout">
@@ -220,7 +142,7 @@ const Preferences = () => {
                 >
                   <PreferenceCard
                     preference={p}
-                    onEdit={() => openEdit(p)}
+                    onEdit={() => handleEdit(p)}
                     onDelete={() => setDeleteId(p.id)}
                   />
                 </motion.div>
@@ -229,116 +151,6 @@ const Preferences = () => {
           </div>
         )}
       </div>
-
-      {/* Create / Edit Modal */}
-      <Dialog open={modalOpen} onOpenChange={setModalOpen}>
-        <DialogContent className="sm:max-w-lg">
-          <DialogHeader>
-            <DialogTitle className="font-display">
-              {editingId ? "Edit Preference" : "Create Preference"}
-            </DialogTitle>
-          </DialogHeader>
-
-          <div className="grid gap-5 py-2">
-            {/* Shape */}
-            <Field label="Shape">
-              <Select value={form.shape} onValueChange={(v) => updateField("shape", v)}>
-                <SelectTrigger className="rounded-xl"><SelectValue placeholder="Select shape" /></SelectTrigger>
-                <SelectContent>
-                  {SHAPES.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </Field>
-
-            {/* Carat Range */}
-            <div className="grid grid-cols-2 gap-4">
-              <Field label="Carat Min">
-                <Input
-                  type="number"
-                  step={0.1}
-                  min={0.1}
-                  value={form.caratMin}
-                  onChange={(e) => updateField("caratMin", parseFloat(e.target.value) || 0)}
-                  className="rounded-xl"
-                />
-              </Field>
-              <Field label="Carat Max">
-                <Input
-                  type="number"
-                  step={0.1}
-                  min={0.1}
-                  value={form.caratMax}
-                  onChange={(e) => updateField("caratMax", parseFloat(e.target.value) || 0)}
-                  className="rounded-xl"
-                />
-              </Field>
-            </div>
-
-            {/* Color */}
-            <Field label="Color">
-              <Select value={form.color} onValueChange={(v) => updateField("color", v)}>
-                <SelectTrigger className="rounded-xl"><SelectValue placeholder="Select color" /></SelectTrigger>
-                <SelectContent>
-                  {COLORS.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </Field>
-
-            {/* Clarity */}
-            <Field label="Clarity">
-              <Select value={form.clarity} onValueChange={(v) => updateField("clarity", v)}>
-                <SelectTrigger className="rounded-xl"><SelectValue placeholder="Select clarity" /></SelectTrigger>
-                <SelectContent>
-                  {CLARITIES.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </Field>
-
-            {/* Budget Range */}
-            <div className="grid grid-cols-2 gap-4">
-              <Field label="Budget Min ($)">
-                <Input
-                  type="number"
-                  step={100}
-                  min={0}
-                  value={form.budgetMin}
-                  onChange={(e) => updateField("budgetMin", parseInt(e.target.value) || 0)}
-                  className="rounded-xl"
-                />
-              </Field>
-              <Field label="Budget Max ($)">
-                <Input
-                  type="number"
-                  step={100}
-                  min={0}
-                  value={form.budgetMax}
-                  onChange={(e) => updateField("budgetMax", parseInt(e.target.value) || 0)}
-                  className="rounded-xl"
-                />
-              </Field>
-            </div>
-
-            {/* Certification */}
-            <Field label="Certification">
-              <Select value={form.certification} onValueChange={(v) => updateField("certification", v)}>
-                <SelectTrigger className="rounded-xl"><SelectValue placeholder="Select certification" /></SelectTrigger>
-                <SelectContent>
-                  {CERTIFICATIONS.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </Field>
-          </div>
-
-          <div className="flex justify-end gap-3 pt-2">
-            <Button variant="outline" onClick={() => setModalOpen(false)}>
-              Cancel
-            </Button>
-            <Button onClick={handleSave}>
-              {editingId ? "Update" : "Save"}
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
 
       {/* Delete Confirmation */}
       <AlertDialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
@@ -365,13 +177,6 @@ const Preferences = () => {
 };
 
 /* ── Sub-components ────────────────────────────── */
-
-const Field = ({ label, children }: { label: string; children: React.ReactNode }) => (
-  <div className="space-y-1.5">
-    <Label className="text-xs font-medium text-muted-foreground">{label}</Label>
-    {children}
-  </div>
-);
 
 const PreferenceCard = ({
   preference: p,
@@ -410,7 +215,6 @@ const PreferenceCard = ({
         </p>
       </div>
     </div>
-
     <div className="flex items-center gap-2 shrink-0">
       <Button variant="ghost" size="icon" onClick={onEdit} className="h-8 w-8">
         <Pencil className="h-4 w-4" />
@@ -431,9 +235,7 @@ const EmptyState = ({ onCreate }: { onCreate: () => void }) => (
     <div className="h-16 w-16 rounded-2xl bg-secondary flex items-center justify-center mb-4">
       <Search className="h-7 w-7 text-muted-foreground" />
     </div>
-    <h3 className="font-display text-lg font-semibold text-foreground mb-1">
-      No preferences yet
-    </h3>
+    <h3 className="font-display text-lg font-semibold text-foreground mb-1">No preferences yet</h3>
     <p className="text-sm text-muted-foreground mb-6 max-w-sm">
       Create your first diamond requirement and we'll match listings that fit your criteria.
     </p>

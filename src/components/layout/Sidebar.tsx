@@ -32,7 +32,7 @@ import { useNavigate } from "react-router-dom";
 export const navItems = [
   { icon: LayoutDashboard, label: "Dashboard", href: "/dashboard" },
   { icon: TrendingUp, label: "Marketplace", href: "/marketplace" },
-  { icon: Heart, label: "Preferences", href: "/preferences" },
+  { icon: Heart, label: "Preferences", href: "/user/preferences" },
   { icon: Package, label: "Inventory", href: "/inventory" },
   { icon: ListPlus, label: "My Listings", href: "/listings" },
   { icon: Gavel, label: "My Bids", href: "/bids" },
