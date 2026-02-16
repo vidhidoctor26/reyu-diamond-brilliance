@@ -35,6 +35,7 @@ import MyBids from "./pages/MyBids";
 import BidsOnMyListings from "./pages/BidsOnMyListings";
  import ListingBids from "./pages/ListingBids";
 import Preferences from "./pages/Preferences";
+import PreferenceForm from "./pages/preferences/PreferenceForm";
 
 const queryClient = new QueryClient();
 
@@ -71,8 +72,9 @@ const App = () => (
           <Route path="/inventory/add" element={<AddInventory />} />
           <Route path="/listings" element={<MyListings />} />
           <Route path="/listings/create" element={<CreateListing />} />
-          <Route path="/preferences" element={<Preferences />} />
-          
+          <Route path="/user/preferences" element={<Preferences />} />
+          <Route path="/user/preferences/new" element={<PreferenceForm />} />
+          <Route path="/user/preferences/:id/edit" element={<PreferenceForm />} />
           {/* Bidding */}
           <Route path="/bids" element={<MyBids />} />
           <Route path="/bids/received" element={<BidsOnMyListings />} />
