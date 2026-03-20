@@ -37,7 +37,7 @@ export const navItems = [
   { icon: ListPlus, label: "My Listings", href: "/listings" },
   { icon: Gavel, label: "My Bids", href: "/bids" },
   { icon: Gavel, label: "Bids Received", href: "/bids/received" },
-  { icon: Handshake, label: "Deals", href: "/deals" },
+  { icon: Handshake, label: "Deals", href: "/user/deals" },
   { icon: Wallet, label: "Payments", href: "/payments" },
   { icon: MessageCircle, label: "Messages", href: "/messages" },
   { icon: Bell, label: "Notifications", href: "/notifications" },
