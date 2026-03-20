@@ -33,9 +33,13 @@ import CreateListing from "./pages/CreateListing";
 // Bidding Pages
 import MyBids from "./pages/MyBids";
 import BidsOnMyListings from "./pages/BidsOnMyListings";
- import ListingBids from "./pages/ListingBids";
+import ListingBids from "./pages/ListingBids";
 import Preferences from "./pages/Preferences";
 import PreferenceForm from "./pages/preferences/PreferenceForm";
+
+// Deals Pages
+import DealsList from "./pages/deals/DealsList";
+import DealDetail from "./pages/deals/DealDetail";
 
 const queryClient = new QueryClient();
 
@@ -75,10 +79,15 @@ const App = () => (
           <Route path="/user/preferences" element={<Preferences />} />
           <Route path="/user/preferences/new" element={<PreferenceForm />} />
           <Route path="/user/preferences/:id/edit" element={<PreferenceForm />} />
+
           {/* Bidding */}
           <Route path="/bids" element={<MyBids />} />
           <Route path="/bids/received" element={<BidsOnMyListings />} />
-           <Route path="/bids/received/:listingId" element={<ListingBids />} />
+          <Route path="/bids/received/:listingId" element={<ListingBids />} />
+
+          {/* Deals */}
+          <Route path="/user/deals" element={<DealsList />} />
+          <Route path="/user/deals/:dealId" element={<DealDetail />} />
           
           {/* Catch-all */}
           <Route path="*" element={<NotFound />} />
