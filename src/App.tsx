@@ -92,6 +92,10 @@ const App = () => (
           {/* Deals */}
           <Route path="/user/deals" element={<DealsList />} />
           <Route path="/user/deals/:dealId" element={<DealDetail />} />
+
+          {/* Chat */}
+          <Route path="/messages" element={<Messages />} />
+          <Route path="/messages/:conversationId" element={<ChatWindow />} />
           
           {/* Catch-all */}
           <Route path="*" element={<NotFound />} />
