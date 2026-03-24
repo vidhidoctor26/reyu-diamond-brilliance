@@ -41,6 +41,10 @@ import PreferenceForm from "./pages/preferences/PreferenceForm";
 import DealsList from "./pages/deals/DealsList";
 import DealDetail from "./pages/deals/DealDetail";
 
+// Chat Pages
+import Messages from "./pages/Messages";
+import ChatWindow from "./pages/ChatWindow";
+
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -88,6 +92,10 @@ const App = () => (
           {/* Deals */}
           <Route path="/user/deals" element={<DealsList />} />
           <Route path="/user/deals/:dealId" element={<DealDetail />} />
+
+          {/* Chat */}
+          <Route path="/messages" element={<Messages />} />
+          <Route path="/messages/:conversationId" element={<ChatWindow />} />
           
           {/* Catch-all */}
           <Route path="*" element={<NotFound />} />
