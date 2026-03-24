@@ -41,6 +41,10 @@ import PreferenceForm from "./pages/preferences/PreferenceForm";
 import DealsList from "./pages/deals/DealsList";
 import DealDetail from "./pages/deals/DealDetail";
 
+// Chat Pages
+import Messages from "./pages/Messages";
+import ChatWindow from "./pages/ChatWindow";
+
 const queryClient = new QueryClient();
 
 const App = () => (
