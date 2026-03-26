@@ -99,6 +99,9 @@ const App = () => (
           {/* Chat */}
           <Route path="/messages" element={<Messages />} />
           <Route path="/messages/:conversationId" element={<ChatWindow />} />
+
+          {/* Notifications */}
+          <Route path="/notifications" element={<NotificationsPage />} />
           
           {/* Catch-all */}
           <Route path="*" element={<NotFound />} />
