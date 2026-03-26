@@ -45,6 +45,9 @@ import DealDetail from "./pages/deals/DealDetail";
 import Messages from "./pages/Messages";
 import ChatWindow from "./pages/ChatWindow";
 
+// Notifications
+import NotificationsPage from "./pages/user/notifications/NotificationsPage";
+
 const queryClient = new QueryClient();
 
 const App = () => (
