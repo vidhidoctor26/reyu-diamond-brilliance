@@ -88,6 +88,11 @@ const DealDetail = () => {
   const isDisputed = deal.status === "DISPUTED";
   const isCancelled = deal.status === "CANCELLED";
 
+  const {
+    showRatingModal, isRated, submittedRating, isSubmitting: isRatingSubmitting,
+    submitRating, dismissRating, openRatingModal,
+  } = useRatings(deal.id, deal.status);
+
   const simulateAction = (newStatus: DealStatus, msg: string, delay = 800) => {
     setIsLoading(true);
     setTimeout(() => {
