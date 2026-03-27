@@ -128,10 +128,13 @@ const DealDetail = () => {
       </div>
     );
     if (status === "COMPLETED") return (
-      <Button onClick={handleDownloadPDF} disabled={isLoading} className="w-full gap-2">
-        {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
-        Download PDF
-      </Button>
+      <div className="space-y-3">
+        <Button onClick={handleDownloadPDF} disabled={isLoading} className="w-full gap-2">
+          {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
+          Download PDF
+        </Button>
+        <RatingBanner isRated={isRated} submittedRating={submittedRating} onRateNow={openRatingModal} />
+      </div>
     );
 
     if (userRole === "buyer") {
