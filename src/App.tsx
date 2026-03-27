@@ -48,6 +48,10 @@ import ChatWindow from "./pages/ChatWindow";
 // Notifications
 import NotificationsPage from "./pages/user/notifications/NotificationsPage";
 
+// Advertisements
+import AdvertisementsList from "./pages/advertisements/AdvertisementsList";
+import CreateAdvertisement from "./pages/advertisements/CreateAdvertisement";
+
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -102,6 +106,10 @@ const App = () => (
 
           {/* Notifications */}
           <Route path="/notifications" element={<NotificationsPage />} />
+
+          {/* Advertisements */}
+          <Route path="/advertisements" element={<AdvertisementsList />} />
+          <Route path="/advertisements/create" element={<CreateAdvertisement />} />
           
           {/* Catch-all */}
           <Route path="*" element={<NotFound />} />
