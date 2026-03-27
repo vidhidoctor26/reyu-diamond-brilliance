@@ -48,6 +48,10 @@ import ChatWindow from "./pages/ChatWindow";
 // Notifications
 import NotificationsPage from "./pages/user/notifications/NotificationsPage";
 
+// Advertisements
+import AdvertisementsList from "./pages/advertisements/AdvertisementsList";
+import CreateAdvertisement from "./pages/advertisements/CreateAdvertisement";
+
 const queryClient = new QueryClient();
 
 const App = () => (
