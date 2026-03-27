@@ -5,6 +5,9 @@ import {
   ArrowLeft, Diamond, Download, Truck, CheckCircle2, AlertTriangle,
   CreditCard, Package, Clock, Ban, Loader2
 } from "lucide-react";
+import { useRatings } from "@/hooks/useRatings";
+import RatingModal from "@/components/ratings/RatingModal";
+import RatingBanner from "@/components/ratings/RatingBanner";
 import DashboardShell from "@/components/layout/DashboardShell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
