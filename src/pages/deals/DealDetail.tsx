@@ -5,6 +5,9 @@ import {
   ArrowLeft, Diamond, Download, Truck, CheckCircle2, AlertTriangle,
   CreditCard, Package, Clock, Ban, Loader2
 } from "lucide-react";
+import { useRatings } from "@/hooks/useRatings";
+import RatingModal from "@/components/ratings/RatingModal";
+import RatingBanner from "@/components/ratings/RatingBanner";
 import DashboardShell from "@/components/layout/DashboardShell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -85,6 +88,11 @@ const DealDetail = () => {
   const isDisputed = deal.status === "DISPUTED";
   const isCancelled = deal.status === "CANCELLED";
 
+  const {
+    showRatingModal, isRated, submittedRating, isSubmitting: isRatingSubmitting,
+    submitRating, dismissRating, openRatingModal,
+  } = useRatings(deal.id, deal.status);
+
   const simulateAction = (newStatus: DealStatus, msg: string, delay = 800) => {
     setIsLoading(true);
     setTimeout(() => {
@@ -120,10 +128,13 @@ const DealDetail = () => {
       </div>
     );
     if (status === "COMPLETED") return (
-      <Button onClick={handleDownloadPDF} disabled={isLoading} className="w-full gap-2">
-        {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
-        Download PDF
-      </Button>
+      <div className="space-y-3">
+        <Button onClick={handleDownloadPDF} disabled={isLoading} className="w-full gap-2">
+          {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
+          Download PDF
+        </Button>
+        <RatingBanner isRated={isRated} submittedRating={submittedRating} onRateNow={openRatingModal} />
+      </div>
     );
 
     if (userRole === "buyer") {
@@ -296,6 +307,15 @@ const DealDetail = () => {
             </DialogFooter>
           </DialogContent>
         </Dialog>
+
+        {/* Rating Modal */}
+        <RatingModal
+          open={showRatingModal}
+          onSubmit={submitRating}
+          onDismiss={dismissRating}
+          isSubmitting={isRatingSubmitting}
+          dealInfo={{ shape: deal.diamond.shape, carat: deal.diamond.carat, dealId: deal.id }}
+        />
       </div>
     </DashboardShell>
   );
