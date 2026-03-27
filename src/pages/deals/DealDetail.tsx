@@ -307,6 +307,15 @@ const DealDetail = () => {
             </DialogFooter>
           </DialogContent>
         </Dialog>
+
+        {/* Rating Modal */}
+        <RatingModal
+          open={showRatingModal}
+          onSubmit={submitRating}
+          onDismiss={dismissRating}
+          isSubmitting={isRatingSubmitting}
+          dealInfo={{ shape: deal.diamond.shape, carat: deal.diamond.carat, dealId: deal.id }}
+        />
       </div>
     </DashboardShell>
   );
