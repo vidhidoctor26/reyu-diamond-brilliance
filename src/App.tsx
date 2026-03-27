@@ -106,6 +106,10 @@ const App = () => (
 
           {/* Notifications */}
           <Route path="/notifications" element={<NotificationsPage />} />
+
+          {/* Advertisements */}
+          <Route path="/advertisements" element={<AdvertisementsList />} />
+          <Route path="/advertisements/create" element={<CreateAdvertisement />} />
           
           {/* Catch-all */}
           <Route path="*" element={<NotFound />} />

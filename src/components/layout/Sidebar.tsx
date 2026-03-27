@@ -42,6 +42,7 @@ export const navItems = [
   { icon: Wallet, label: "Payments", href: "/payments" },
   { icon: MessageCircle, label: "Messages", href: "/messages" },
   { icon: Bell, label: "Notifications", href: "/notifications" },
+  { icon: Megaphone, label: "Advertisements", href: "/advertisements" },
 ];
 
 export const bottomNavItems = [
